@@ -11,6 +11,11 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "paths": {
+      "ngx-reactive-errors": [
+        "./dist/ngx-reactive-errors"
+      ]
+    },
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": false,
