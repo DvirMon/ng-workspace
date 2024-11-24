@@ -3,4 +3,3 @@
  */
 
 export * from './lib/ngx-reactive-errors.service';
-export * from './lib/ngx-reactive-errors.component';
