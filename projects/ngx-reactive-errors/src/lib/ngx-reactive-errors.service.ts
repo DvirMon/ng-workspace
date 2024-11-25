@@ -11,18 +11,19 @@ import {
 } from "rxjs";
 import { ControlMap } from "./types";
 import { AbstractMessageManager } from "./utils/abstract-messages-manger";
+import { toNamespacedPath } from "path/win32";
 
 export class NgxReactiveErrorsService {
   #messageManager = inject(AbstractMessageManager);
   #injector = inject(Injector);
 
-  getErrorsAsObs<TControl extends ControlMap = ControlMap>(
+  getGroupErrorsAsObs<TControl extends ControlMap = ControlMap>(
     form: FormGroup<TControl>
   ): { [K in keyof TControl]: Observable<string> } {
     return this.#setErrors(form);
   }
 
-  getErrorsAsSignal<TControl extends ControlMap = ControlMap>(
+  getGroupErrorsAsSignal<TControl extends ControlMap = ControlMap>(
     form: FormGroup<TControl>
   ): { [K in keyof TControl]: Signal<string> } {
     return runInInjectionContext(this.#injector, () => {
@@ -40,6 +41,24 @@ export class NgxReactiveErrorsService {
 
       return signals as { [K in keyof TControl]: Signal<string> };
     });
+  }
+
+  getControlErrorAsObs(
+    control: AbstractControl,
+    name: string
+  ): Observable<string> {
+    return this.#getControlMessageStream(control, name);
+  }
+
+  getControlErrorAsSignal(
+    control: AbstractControl,
+    name: string
+  ): Signal<string> {
+    return runInInjectionContext(this.#injector, () =>
+      toSignal(this.#getControlMessageStream(control, name), {
+        initialValue: "",
+      })
+    );
   }
 
   #setErrors<TControl extends ControlMap>(
