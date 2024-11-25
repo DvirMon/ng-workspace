@@ -1,1 +1,11 @@
-<button (click)="0">Button</button>
+<button (click)="(0)">Button</button>
+
+<input type="email" [formControl]="control" />
+
+<p>
+  {{ error() }}
+</p>
+<pre>
+
+    {{ control.errors | json }}
+</pre>

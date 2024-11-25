@@ -11,7 +11,6 @@ import {
 } from "rxjs";
 import { ControlMap } from "./types";
 import { AbstractMessageManager } from "./utils/abstract-messages-manger";
-import { toNamespacedPath } from "path/win32";
 
 export class NgxReactiveErrorsService {
   #messageManager = inject(AbstractMessageManager);

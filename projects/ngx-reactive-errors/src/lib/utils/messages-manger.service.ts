@@ -27,7 +27,7 @@ export class MessageManagerService extends AbstractMessageManager {
     const messageFn = this.#errorMessagesLookup.get(errorKey);
     return messageFn
       ? messageFn(field, errorValue)
-      : `${this.formatFieldName(field)} is invalid.`;
+      : errorValue || `${this.formatFieldName(field)} is invalid.`;
   }
 
   updateErrorMessages(
