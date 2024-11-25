@@ -89,8 +89,22 @@ export class NgxReactiveErrorsService {
       filter((errors) => errors !== null),
       distinctUntilChanged((prev, curr) => this.#areErrorsEqual(prev, curr)),
       map((errors) => this.#getFirstErrorMessage(controlName, errors)),
-      shareReplay(1)
     );
+  }
+
+  #getFirstErrorMessage(
+    controlName: string,
+    errors: ValidationErrors | null
+  ): string {
+    if (errors) {
+      const firstErrorKey = Object.keys(errors)[0];
+      return this.#messageManager.getErrorMessage(
+        controlName,
+        firstErrorKey,
+        errors[firstErrorKey]
+      );
+    }
+    return "";
   }
 
   #areErrorsEqual(
@@ -111,20 +125,5 @@ export class NgxReactiveErrorsService {
 
     // For single-key objects, compare the error type
     return prevKeys[0] === currKeys[0];
-  }
-
-  #getFirstErrorMessage(
-    controlName: string,
-    errors: ValidationErrors | null
-  ): string {
-    if (errors) {
-      const firstErrorKey = Object.keys(errors)[0];
-      return this.#messageManager.getErrorMessage(
-        controlName,
-        firstErrorKey,
-        errors[firstErrorKey]
-      );
-    }
-    return "";
   }
 }
