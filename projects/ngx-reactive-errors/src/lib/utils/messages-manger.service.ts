@@ -63,10 +63,4 @@ export class MessageManagerService extends AbstractMessageManager {
         `${this.formatFieldName(name)} does not match the required pattern.`
     );
   }
-
-  protected formatFieldName(name: string): string {
-    return name
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, (str) => str.toUpperCase());
-  }
 }
