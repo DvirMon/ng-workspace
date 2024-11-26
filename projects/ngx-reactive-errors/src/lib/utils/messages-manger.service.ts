@@ -8,7 +8,7 @@ import { ERROR_MESSAGE_PROVIDERS } from "../tokens";
 export class MessageManagerService extends AbstractMessageManager {
   #errorMessagesLookup = new Map<
     string,
-    (field: string, errorValue?: any) => string
+    (name: string, errorValue?: any) => string
   >();
 
   additionalMessages = inject(ERROR_MESSAGE_PROVIDERS, { optional: true });
@@ -23,15 +23,15 @@ export class MessageManagerService extends AbstractMessageManager {
     this.updateErrorMessages(messages);
   }
 
-  getErrorMessage(field: string, errorKey: string, errorValue?: any): string {
+  getErrorMessage(name: string, errorKey: string, errorValue?: any): string {
     const messageFn = this.#errorMessagesLookup.get(errorKey);
     return messageFn
-      ? messageFn(field, errorValue)
-      : errorValue || `${this.formatFieldName(field)} is invalid.`;
+      ? messageFn(name, errorValue)
+      : errorValue || `${this.formatFieldName(name)} is invalid.`;
   }
 
   updateErrorMessages(
-    messages: [string, (field: string, errorValue?: any) => string][]
+    messages: [string, (name: string, errorValue?: any) => string][]
   ): void {
     messages.forEach(([key, messageFn]) => {
       this.#errorMessagesLookup.set(key, messageFn);
@@ -41,31 +41,31 @@ export class MessageManagerService extends AbstractMessageManager {
   #addDefaultMessages(): void {
     this.#errorMessagesLookup.set(
       "required",
-      (field) => `${this.formatFieldName(field)} is required.`
+      (name) => `${this.formatFieldName(name)} is required.`
     );
     this.#errorMessagesLookup.set(
       "minlength",
-      (field, errorValue) =>
-        `${this.formatFieldName(field)} must be at least ${
+      (name, errorValue) =>
+        `${this.formatFieldName(name)} must be at least ${
           errorValue.requiredLength
         } characters.`
     );
     this.#errorMessagesLookup.set(
       "maxlength",
-      (field, errorValue) =>
-        `${this.formatFieldName(field)} cannot exceed ${
+      (name, errorValue) =>
+        `${this.formatFieldName(name)} cannot exceed ${
           errorValue.requiredLength
         } characters.`
     );
     this.#errorMessagesLookup.set(
       "pattern",
-      (field) =>
-        `${this.formatFieldName(field)} does not match the required pattern.`
+      (name) =>
+        `${this.formatFieldName(name)} does not match the required pattern.`
     );
   }
 
-  protected formatFieldName(field: string): string {
-    return field
+  protected formatFieldName(name: string): string {
+    return name
       .replace(/([A-Z])/g, " $1")
       .replace(/^./, (str) => str.toUpperCase());
   }
