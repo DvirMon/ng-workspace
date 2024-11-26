@@ -1,7 +1,7 @@
 # ngx-reactive-errors
 
 ## Description
-`ngx-reactive-errors` is an Angular library designed to simplify form validation error handling in a reactive way. Compatible with Angular 19 and above, it provides error messages as `Observable` or Angular's `Signal`, making it easier to monitor and display validation errors in your forms. The library is highly customizable, allowing you to override default error messages and the message management service.
+`ngx-reactive-errors` is an Angular library designed to simplify form validation error handling in a reactive way. It provides error messages as `Observable` or Angular's `Signal`, making it easier to monitor and display validation errors in your forms. The library is highly customizable, allowing you to override default error messages and the message management service.
 
 ## Table of Contents
 - [Features](#features)
@@ -18,8 +18,6 @@
 - Provides form error messages as `Observable` or Angular's new `Signal`.
 - Supports both individual form controls (`AbstractControl`) and grouped controls (`FormGroup`).
 - Leverages RxJS for efficient error handling with deduplication logic.
-- Customizable error messages using an `AbstractMessageManager`.
-- Fully compatible with Angular 19 and its latest utilities (`runInInjectionContext`, `toSignal`).
 
 ## Installation
 Install the library using npm:
@@ -42,7 +40,28 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-This configuration ensures that the error service is available throughout your application.
+This setup ensures that the error service is available throughout your application.
+
+### Component-Level Setup
+
+It is **recommended to provide the service at the component level** because each instance of the service is intended to manage error handling for a specific `FormGroup`. By scoping the service to the component, you ensure a dedicated configuration for the associated form.
+
+For specific use cases, provide the service in the component where the `FormGroup` is defined:
+
+```typescript
+import { Component } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { provideFormErrorService } from 'ngx-reactive-errors';
+
+@Component({
+  selector: 'app-custom-form',
+  templateUrl: './custom-form.component.html',
+  providers: [
+    provideFormErrorService(),
+  ],
+})
+export class CustomFormComponent {...}
+```
 
 ## Configuration
 `ngx-reactive-errors` provides a flexible configuration object, `ReactiveErrorConfig`, that allows you to customize the default behavior of the library. You can:
