@@ -41,4 +41,10 @@ export abstract class AbstractMessageManager {
     errorKey: string,
     errorValue?: any
   ): string;
+
+  protected formatFieldName(name: string): string {
+    return name
+      .replace(/([A-Z])/g, " $1")
+      .replace(/^./, (str) => str.toUpperCase());
+  }
 }
