@@ -16,13 +16,13 @@ export class NgxReactiveErrorsService {
   #messageManager = inject(AbstractMessageManager);
   #injector = inject(Injector);
 
-  getGroupErrorsAsObs<TControl extends ControlMap = ControlMap>(
+  getGroupErrorsAsObs<TControl extends ControlMap>(
     form: FormGroup<TControl>
   ): { [K in keyof TControl]: Observable<string> } {
     return this.#setErrors(form);
   }
 
-  getGroupErrorsAsSignal<TControl extends ControlMap = ControlMap>(
+  getGroupErrorsAsSignal<TControl extends ControlMap>(
     form: FormGroup<TControl>
   ): { [K in keyof TControl]: Signal<string> } {
     return runInInjectionContext(this.#injector, () => {
