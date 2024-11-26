@@ -1,24 +1,208 @@
-# NgxReactiveErrors
+# ngx-reactive-errors
 
-This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.0.
+## Description
+`ngx-reactive-errors` is an Angular library designed to simplify form validation error handling in a reactive way. Compatible with Angular 19 and above, it provides error messages as `Observable` or Angular's `Signal`, making it easier to monitor and display validation errors in your forms. The library is highly customizable, allowing you to override default error messages and the message management service.
 
-## Code scaffolding
+## Table of Contents
+- [Features](#features)
+- [Installation](#installation)
+- [Setup](#setup)
+- [Configuration](#configuration)
+- [API Documentation](#api-documentation)
+- [Usage Examples](#usage-examples)
+- [Contribution Guidelines](#contribution-guidelines)
+- [License](#license)
+- [Contact](#contact)
 
-Run `ng generate component component-name --project ngx-reactive-errors` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module --project ngx-reactive-errors`.
-> Note: Don't forget to add `--project ngx-reactive-errors` or else it will be added to the default project in your `angular.json` file. 
+## Features
+- Provides form error messages as `Observable` or Angular's new `Signal`.
+- Supports both individual form controls (`AbstractControl`) and grouped controls (`FormGroup`).
+- Leverages RxJS for efficient error handling with deduplication logic.
+- Customizable error messages using an `AbstractMessageManager`.
+- Fully compatible with Angular 19 and its latest utilities (`runInInjectionContext`, `toSignal`).
 
-## Build
+## Installation
+Install the library using npm:
 
-Run `ng build ngx-reactive-errors` to build the project. The build artifacts will be stored in the `dist/` directory.
+```bash
+npm install ngx-reactive-errors
+```
 
-## Publishing
+## Setup
+To set up `ngx-reactive-errors` in a standalone Angular application, configure the `ApplicationConfig` to provide the required services:
 
-After building your library with `ng build ngx-reactive-errors`, go to the dist folder `cd dist/ngx-reactive-errors` and run `npm publish`.
+```typescript
+import { ApplicationConfig } from '@angular/core';
+import { provideFormErrorService } from 'ngx-reactive-errors';
 
-## Running unit tests
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideFormErrorService()
+  ],
+};
+```
 
-Run `ng test ngx-reactive-errors` to execute the unit tests via [Karma](https://karma-runner.github.io).
+This configuration ensures that the error service is available throughout your application.
 
-## Further help
+## Configuration
+`ngx-reactive-errors` provides a flexible configuration object, `ReactiveErrorConfig`, that allows you to customize the default behavior of the library. You can:
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+1. **Override Default Validation Messages**:
+   - Use the `errorMessages` property to define custom messages for validation errors.
+   - Each message is a tuple where:
+     - The first value is the error key (e.g., `'required'`, `'minlength'`).
+     - The second value is a function that generates the error message dynamically, based on the field name and error details.
+
+2. **Replace the Default Message Manager Service**:
+   - Use the `messageManagerType` property to provide a custom implementation of the `AbstractMessageManager`.
+   - This is useful for advanced scenarios requiring centralized or reusable error management logic.
+
+### Example Configuration
+Below is an example of customizing both the default messages and the message manager service:
+
+```typescript
+import { ApplicationConfig } from '@angular/core';
+import { provideFormErrorService } from 'ngx-reactive-errors';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideFormErrorService({
+      errorMessages: [
+        ['required', (field) => `${field} is required`],
+        ['minlength', (field, errorValue) => `${field} must be at least ${errorValue.requiredLength} characters`],
+      ],
+      messageManagerType: CustomMessageManager, // Replace with your implementation
+    }),
+  ],
+};
+```
+
+### Default Behavior
+If no configuration is provided, `ngx-reactive-errors` uses:
+1. **Default Message Manager Service**:
+   - A basic implementation of `AbstractMessageManager` that generates error messages based on predefined rules.
+2. **Generic Error Messages**:
+   - Example: `'This field is required'` for `required` validation.
+
+### Customizing the `AbstractMessageManager`
+To customize the `messageManagerService`, create a class extending `AbstractMessageManager` and implement the `getErrorMessage` method:
+
+```typescript
+import { AbstractMessageManager } from 'ngx-reactive-errors';
+
+export class CustomMessageManager extends AbstractMessageManager {
+  getErrorMessage(controlName: string, errorKey: string, errorValue?: any): string {
+    const messages = {
+      required: `${controlName} is required`,
+      minlength: `${controlName} must be at least ${errorValue?.requiredLength} characters`,
+    };
+    return messages[errorKey] || `Invalid value for ${controlName}`;
+  }
+}
+```
+
+Once implemented, pass the custom class to the `messageManagerType` property in the configuration.
+
+## API Documentation
+
+### `getGroupErrorsAsObs`
+**Description**: Returns a dictionary of Observables, where each key corresponds to a form control name.
+
+**Parameters**:
+- `form` (FormGroup): The form group to extract error messages from.
+
+**Returns**:
+- `{ [key: string]: Observable<string> }`: Dictionary of Observables for error messages.
+
+---
+
+### `getGroupErrorsAsSignal`
+**Description**: Returns a dictionary of Signals, where each key corresponds to a form control name.
+
+**Parameters**:
+- `form` (FormGroup): The form group to extract error messages from.
+
+**Returns**:
+- `{ [key: string]: Signal<string> }`: Dictionary of Signals for error messages.
+
+---
+
+### `getControlErrorAsObs`
+**Description**: Returns an Observable for a specific control's error message.
+
+**Parameters**:
+- `control` (AbstractControl): The control to monitor.
+- `name` (string): The name of the control.
+
+**Returns**:
+- `Observable<string>`: Observable of the error message.
+
+---
+
+### `getControlErrorAsSignal`
+**Description**: Returns a Signal for a specific control's error message.
+
+**Parameters**:
+- `control` (AbstractControl): The control to monitor.
+- `name` (string): The name of the control.
+
+**Returns**:
+- `Signal<string>`: Signal of the error message.
+
+## Usage Examples
+
+### Example 1: Using Observables for a `FormGroup`
+```typescript
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { NgxReactiveErrorsService } from 'ngx-reactive-errors';
+
+constructor(private fb: FormBuilder, private errorService: NgxReactiveErrorsService) {
+  const form: FormGroup = this.fb.group({
+    username: ['', [Validators.required, Validators.minLength(3)]],
+    password: ['', Validators.required],
+  });
+
+  const errors = this.errorService.getGroupErrorsAsObs(form);
+
+  errors.username.subscribe((error) => console.log('Username Error:', error));
+  errors.password.subscribe((error) => console.log('Password Error:', error));
+}
+```
+
+### Example 2: Using Signals for a `FormGroup`
+```typescript
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { NgxReactiveErrorsService } from 'ngx-reactive-errors';
+
+constructor(private fb: FormBuilder, private errorService: NgxReactiveErrorsService) {
+  const form: FormGroup = this.fb.group({
+    username: ['', [Validators.required, Validators.minLength(3)]],
+    password: ['', Validators.required],
+  });
+
+  const signals = this.errorService.getGroupErrorsAsSignal(form);
+
+  const usernameError = signals.username();
+  console.log('Username Error:', usernameError);
+}
+```
+
+### Example 3: Using Observables for an `AbstractControl`
+```typescript
+const usernameControl = this.fb.control('', [Validators.required]);
+const usernameError$ = this.errorService.getControlErrorAsObs(usernameControl, 'username');
+
+usernameError$.subscribe((error) => console.log('Username Error:', error));
+```
+
+## Contribution Guidelines
+We welcome contributions! To contribute:
+1. Fork the repository and create a new branch for your feature or bugfix.
+2. Ensure all tests pass by running `npm test`.
+3. Submit a pull request with a clear description of your changes.
+
+## License
+This project is licensed under the MIT License.
+
+## Contact
+For questions or feedback, contact us via [GitHub Issues](https://github.com/your-repo/issues).
