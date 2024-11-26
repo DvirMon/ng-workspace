@@ -175,7 +175,10 @@ Once implemented, pass the custom class to the `messageManagerType` property in 
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NgxReactiveErrorsService } from 'ngx-reactive-errors';
 
-constructor(private fb: FormBuilder, private errorService: NgxReactiveErrorsService) {
+fb = inject(FormBuilder);
+errorService = inject(NgxReactiveErrorsService);
+
+constructor() {
   const form: FormGroup = this.fb.group({
     username: ['', [Validators.required, Validators.minLength(3)]],
     password: ['', Validators.required],
@@ -193,7 +196,10 @@ constructor(private fb: FormBuilder, private errorService: NgxReactiveErrorsServ
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { NgxReactiveErrorsService } from 'ngx-reactive-errors';
 
-constructor(private fb: FormBuilder, private errorService: NgxReactiveErrorsService) {
+fb = inject(FormBuilder);
+errorService = inject(NgxReactiveErrorsService);
+
+constructor() {
   const form: FormGroup = this.fb.group({
     username: ['', [Validators.required, Validators.minLength(3)]],
     password: ['', Validators.required],
